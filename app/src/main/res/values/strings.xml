@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">WebViewCache</string>
+    <string name="clear_cache">清除缓存</string>
+</resources>
