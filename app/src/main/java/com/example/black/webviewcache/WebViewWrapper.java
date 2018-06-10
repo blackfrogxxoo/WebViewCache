@@ -2,6 +2,7 @@ package com.example.black.webviewcache;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
@@ -15,9 +16,11 @@ public class WebViewWrapper {
     private boolean isLoading;
     public String title;
     private String url;
+    private long lastCompletelyVisibleTimestamp;
 
-    public WebViewWrapper(final Context context, final WebViewManager.UrlLoadCallback urlLoadCallback) {
+    public WebViewWrapper(final Context context, final WebViewManager.UrlLoadCallback urlLoadCallback, String initUrl) {
         this.webView = new WebView(context);
+        this.url = initUrl;
         webView.setWebViewClient(new CachedWebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -82,10 +85,22 @@ public class WebViewWrapper {
         return title;
     }
 
-    public void loadUrl(String url) {
+    public void loadUrl() {
         if(progress != 100 && !isLoading) {
-            this.url = url;
             webView.loadUrl(url);
         }
+    }
+
+    public long getLastCompletelyVisibleTimestamp() {
+        return lastCompletelyVisibleTimestamp;
+    }
+
+    public void setLastCompletelyVisibleTimestamp(long lastCompletelyVisibleTimestamp) {
+        Log.i(TAG, url + "setLastCompletelyVisibleTimestamp: " + lastCompletelyVisibleTimestamp);
+        this.lastCompletelyVisibleTimestamp = lastCompletelyVisibleTimestamp;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }

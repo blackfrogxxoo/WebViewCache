@@ -9,12 +9,16 @@ import android.view.MenuItem;
 import android.view.View;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private int lastFirstCompletelyVisibleItemPosition;
-    private int lastLastCompletelyVisibleItemPosition;
     private Adapter adapter;
+    private Timer loadTimer;
+    private boolean activityResumed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,21 +45,39 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         recyclerView.setAdapter(adapter);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-            }
 
+        loadTimer = new Timer("LoadTimer");
+        loadTimer.schedule(new TimerTask() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                int fcvip = layoutManager.findFirstCompletelyVisibleItemPosition();
-                int lcvip = layoutManager.findLastCompletelyVisibleItemPosition();
-                onCompletelyVisibleItemsChanged(fcvip, lcvip);
-                int fvip = layoutManager.findFirstVisibleItemPosition();
-                int lvip = layoutManager.findLastVisibleItemPosition();
-                onVisibleItemsChanged(fvip, lvip);
+            public void run() {
+                if(activityResumed) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            int fcvip = layoutManager.findFirstCompletelyVisibleItemPosition();
+                            int lcvip = layoutManager.findLastCompletelyVisibleItemPosition();
+                            int fvip = layoutManager.findFirstVisibleItemPosition();
+                            int lvip = layoutManager.findLastVisibleItemPosition();
+                            onVisibleItemsChanged(fvip, lvip, fcvip, lcvip);
+                            WebViewManager.INSTANCE.startLoadAll();
+                        }
+                    });
+
+                }
             }
-        });
+        }, 100, 1000);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        activityResumed = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        activityResumed = false;
     }
 
     /**
@@ -63,21 +85,23 @@ public class MainActivity extends AppCompatActivity {
      * @param fvip
      * @param lvip
      */
-    private void onVisibleItemsChanged(int fvip, int lvip) {
-
-    }
-
-    /**
-     * 新的可见item，三秒后如果仍然完全可见，则开始加载
-     * @param fcvip
-     * @param lcvip
-     */
-    private void onCompletelyVisibleItemsChanged(int fcvip, int lcvip) {
-        lastFirstCompletelyVisibleItemPosition = fcvip;
-        lastLastCompletelyVisibleItemPosition = lcvip;
-        for(int i = fcvip; i < lcvip; i++) {
-            WebViewManager.INSTANCE.startLoad(UrlRepo.getUrls().get(i));
+    private void onVisibleItemsChanged(int fvip, int lvip, int fcvip, int lcvip) {
+        List<String> visibleUrls = new ArrayList<>();
+        for(int i = fvip; i <= lvip; i ++) {
+            String url = UrlRepo.getUrls().get(i);
+            if(!visibleUrls.contains(url)) {
+                visibleUrls.add(url);
+            }
         }
+
+        List<String> completelyVisibleUrls = new ArrayList<>();
+        for(int i = fcvip; i <= lcvip; i ++) {
+            String url = UrlRepo.getUrls().get(i);
+            if(!completelyVisibleUrls.contains(url)) {
+                completelyVisibleUrls.add(url);
+            }
+        }
+        WebViewManager.INSTANCE.onVisibleUrls(visibleUrls, completelyVisibleUrls);
     }
 
     @Override
@@ -109,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         WebViewManager.INSTANCE.release();
+        loadTimer.cancel();
     }
 
 }

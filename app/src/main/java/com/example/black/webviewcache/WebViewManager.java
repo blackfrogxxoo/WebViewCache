@@ -6,6 +6,7 @@ import android.webkit.WebView;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ public enum WebViewManager {
         if(webViewWrapperMap.containsKey(url)) {
             return;
         }
-        WebViewWrapper webViewWrapper = new WebViewWrapper(context, urlLoadCallback);
+        WebViewWrapper webViewWrapper = new WebViewWrapper(context, urlLoadCallback, url);
         webViewWrapperMap.put(url, webViewWrapper);
     }
     void removeWebView(String url) {
@@ -38,7 +39,7 @@ public enum WebViewManager {
         }
         if(webViewWrapper.getProgress() != 100 && !webViewWrapper.isLoading()) {
             Log.i(TAG, "startLoad: url=(" + url + ") 开始加载...");
-            webViewWrapper.loadUrl(url);
+            webViewWrapper.loadUrl();
         }
     }
     void stopLoading(String url) {
@@ -75,6 +76,41 @@ public enum WebViewManager {
             }
         }
         release();
+    }
+
+    /**
+     * 遍历所有webViewWrapper，如果lastCompletelyVisibleTimestamp已经是3秒前且不为0，则开始加载
+     */
+    public void startLoadAll() {
+        Set<Map.Entry<String, WebViewWrapper>> entry = webViewWrapperMap.entrySet();
+        Iterator<Map.Entry<String, WebViewWrapper>> iterator = entry.iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, WebViewWrapper> item = iterator.next();
+            if(item.getValue() != null && item.getValue().getWebView() != null) {
+                WebViewWrapper wrapper = item.getValue();
+                if(wrapper.getLastCompletelyVisibleTimestamp() > 0 && System.currentTimeMillis() - wrapper.getLastCompletelyVisibleTimestamp() > 3000) {
+                    startLoad(wrapper.getUrl());
+                }
+            }
+        }
+    }
+
+    public void onVisibleUrls(List<String> visibleUrls, List<String> completelyVisibleUrls) {
+        Set<Map.Entry<String, WebViewWrapper>> entry = webViewWrapperMap.entrySet();
+        Iterator<Map.Entry<String, WebViewWrapper>> iterator = entry.iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, WebViewWrapper> item = iterator.next();
+            if(item.getValue() != null && item.getValue().getWebView() != null) {
+                WebViewWrapper wrapper = item.getValue();
+                if(!visibleUrls.contains(wrapper.getUrl())) {
+                    // 完全不可见，lastCompletelyVisibleTimestamp重置为0
+                    wrapper.setLastCompletelyVisibleTimestamp(0);
+                } else if(completelyVisibleUrls.contains(wrapper.getUrl()) && wrapper.getLastCompletelyVisibleTimestamp() == 0) {
+                    // 完全可见，如果lastCompletelyVisibleTimestamp = 0, 则置为当前时间戳
+                    wrapper.setLastCompletelyVisibleTimestamp(System.currentTimeMillis());
+                }
+            }
+        }
     }
 
     interface UrlLoadCallback {
