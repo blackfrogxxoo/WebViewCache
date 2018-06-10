@@ -34,8 +34,19 @@ public class MainActivity extends AppCompatActivity {
                     View v = recyclerView.getChildAt(i);
                     Adapter.Holder holder = (Adapter.Holder) v.getTag();
                     if(holder != null && url.equals(UrlRepo.getUrls().get(holder.getAdapterPosition()))) {
-                        Log.i(TAG, "onProgress: " + i);
                         holder.progressBar.setProgress(progress);
+                    }
+                }
+            }
+
+            @Override
+            public void onTitle(String url, String title) {
+                int count = recyclerView.getChildCount();
+                for(int i = 0; i < count; i++) {
+                    View v = recyclerView.getChildAt(i);
+                    Adapter.Holder holder = (Adapter.Holder) v.getTag();
+                    if(holder != null && url.equals(UrlRepo.getUrls().get(holder.getAdapterPosition()))) {
+                        holder.tvTitle.setText(title);
                     }
                 }
             }

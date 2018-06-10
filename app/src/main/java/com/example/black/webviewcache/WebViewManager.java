@@ -80,5 +80,7 @@ public enum WebViewManager {
 
     interface UrlLoadCallback {
         void onProgress(String url, int progress);
+
+        void onTitle(String url, String title);
     }
 }
