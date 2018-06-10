@@ -4,13 +4,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+
+import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -28,25 +26,16 @@ public class MainActivity extends AppCompatActivity {
         adapter = new Adapter(this);
         WebViewManager.INSTANCE.setUrlLoadCallback(new WebViewManager.UrlLoadCallback() {
             @Override
-            public void onProgress(String url, int progress) {
+            public void onLoad(String url, boolean isLoading, String title, int progress) {
                 int count = recyclerView.getChildCount();
                 for(int i = 0; i < count; i++) {
                     View v = recyclerView.getChildAt(i);
                     Adapter.Holder holder = (Adapter.Holder) v.getTag();
                     if(holder != null && url.equals(UrlRepo.getUrls().get(holder.getAdapterPosition()))) {
                         holder.progressBar.setProgress(progress);
-                    }
-                }
-            }
-
-            @Override
-            public void onTitle(String url, String title) {
-                int count = recyclerView.getChildCount();
-                for(int i = 0; i < count; i++) {
-                    View v = recyclerView.getChildAt(i);
-                    Adapter.Holder holder = (Adapter.Holder) v.getTag();
-                    if(holder != null && url.equals(UrlRepo.getUrls().get(holder.getAdapterPosition()))) {
                         holder.tvTitle.setText(title);
+                        holder.progressBar.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
+                        holder.tvLoading.setText(isLoading ? "loading" : (progress == 100 ? "finished" : ""));
                     }
                 }
             }
@@ -67,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
                 onVisibleItemsChanged(fvip, lvip);
             }
         });
-
     }
 
     /**
@@ -103,6 +91,12 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.clear_cache:
                 WebViewManager.INSTANCE.clearCache();
+                File imageCaches = new File(Constant.IMAGE_CACHE_PATH);
+                if (imageCaches.exists() && imageCaches.isDirectory()) {
+                    for (File file : imageCaches.listFiles()) {
+                        file.delete();
+                    }
+                }
                 adapter.notifyDataSetChanged();
                 break;
             default:

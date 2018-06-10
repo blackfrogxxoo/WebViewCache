@@ -37,10 +37,8 @@ public enum WebViewManager {
             return;
         }
         if(webViewWrapper.getProgress() != 100 && !webViewWrapper.isLoading()) {
-            Log.i(TAG, "startLoad: url=(" + url + ")开始加载...");
+            Log.i(TAG, "startLoad: url=(" + url + ") 开始加载...");
             webViewWrapper.loadUrl(url);
-        } else {
-            Log.i(TAG, "startLoad: url=(" + url + ")已完成加载");
         }
     }
     void stopLoading(String url) {
@@ -80,8 +78,6 @@ public enum WebViewManager {
     }
 
     interface UrlLoadCallback {
-        void onProgress(String url, int progress);
-
-        void onTitle(String url, String title);
+        void onLoad(String url, boolean isLoading, String title, int progress);
     }
 }

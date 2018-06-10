@@ -39,9 +39,13 @@ class Adapter extends RecyclerView.Adapter<Adapter.Holder> {
         if(wrapper != null) {
             holder.progressBar.setProgress(wrapper.getProgress());
             holder.tvTitle.setText(wrapper.getWebView().getTitle());
+            holder.progressBar.setVisibility(wrapper.isLoading() ? View.VISIBLE : View.INVISIBLE);
+            holder.tvLoading.setText(wrapper.isLoading() ? "loading" : (wrapper.getProgress() == 100 ? "finished" : ""));
         } else {
             holder.progressBar.setProgress(0);
             holder.tvTitle.setText(null);
+            holder.progressBar.setVisibility(View.INVISIBLE);
+            holder.tvLoading.setText("");
             WebViewManager.INSTANCE.addWebView(context, url);
         }
         holder.itemView.setOnClickListener(new View.OnClickListener() {

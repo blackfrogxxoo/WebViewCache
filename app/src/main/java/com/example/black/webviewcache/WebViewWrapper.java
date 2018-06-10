@@ -2,13 +2,11 @@ package com.example.black.webviewcache;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.http.SslError;
-import android.os.Build;
-import android.util.Log;
-import android.webkit.SslErrorHandler;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 public class WebViewWrapper {
     private static final String TAG = "WebViewWrapper";
@@ -18,40 +16,51 @@ public class WebViewWrapper {
     public String title;
     private String url;
 
-    public WebViewWrapper(Context context, final WebViewManager.UrlLoadCallback urlLoadCallback) {
+    public WebViewWrapper(final Context context, final WebViewManager.UrlLoadCallback urlLoadCallback) {
         this.webView = new WebView(context);
-        webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onLoadResource(WebView view, String url) {
-                Log.i(TAG, "onLoadResource: " + url);
-                // TODO 保存图片到本地
-            }
-
-            @Override
-            public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-                handler.proceed();
-            }
-
+        webView.setWebViewClient(new CachedWebViewClient() {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 isLoading = true;
+                urlLoadCallback.onLoad(url, isLoading, title, progress);
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
                 isLoading = false;
             }
+
+            @Override
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                super.onReceivedError(view, request, error);
+                progress = 0;
+                title = "Load error";
+                isLoading = false;
+                urlLoadCallback.onLoad(url, isLoading, title, progress);
+            }
+
+            @Override
+            public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+                super.onReceivedHttpError(view, request, errorResponse);
+                progress = 0;
+                title = "Load error";
+                isLoading = false;
+                urlLoadCallback.onLoad(url, isLoading, title, progress);
+            }
         });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onReceivedTitle(WebView view, String t) {
                 title = t;
-                urlLoadCallback.onTitle(url, t);
+                urlLoadCallback.onLoad(url, isLoading, title, progress);
             }
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 progress = newProgress;
-                urlLoadCallback.onProgress(url, newProgress);
+                if(newProgress == 100) {
+                    isLoading = false;
+                }
+                urlLoadCallback.onLoad(url, isLoading, title, progress);
             }
         });
         Util.initWebViewSettings(webView);

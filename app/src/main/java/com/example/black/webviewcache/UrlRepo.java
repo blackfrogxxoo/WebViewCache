@@ -8,7 +8,7 @@ public class UrlRepo {
     static {
         urls = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
-            switch (i % 3) {
+            switch (i % 6) {
                 case 0:
                     urls.add("https://github.com");
                     break;
@@ -17,6 +17,15 @@ public class UrlRepo {
                     break;
                 case 2:
                     urls.add("https://cn.bing.com/");
+                    break;
+                case 3:
+                    urls.add("file:///android_asset/test1.html");
+                    break;
+                case 4:
+                    urls.add("file:///android_asset/test2.html");
+                    break;
+                case 5:
+                    urls.add("file:///android_asset/test3.html");
                     break;
                 default:
                     break;
