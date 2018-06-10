@@ -20,12 +20,7 @@ public class ImageCache {
         return null;
     }
 
-    /**
-     * 获取网络图片
-     * @param imageurl 图片网络地址
-     * @return Bitmap 返回位图
-     */
-    public static void loadImage(String imageurl){
+    public static void loadImageToCache(String imageurl){
         URL url;
         HttpURLConnection connection = null;
         try {

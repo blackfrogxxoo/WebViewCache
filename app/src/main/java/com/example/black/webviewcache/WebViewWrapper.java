@@ -96,7 +96,6 @@ public class WebViewWrapper {
     }
 
     public void setLastCompletelyVisibleTimestamp(long lastCompletelyVisibleTimestamp) {
-        Log.i(TAG, url + "setLastCompletelyVisibleTimestamp: " + lastCompletelyVisibleTimestamp);
         this.lastCompletelyVisibleTimestamp = lastCompletelyVisibleTimestamp;
     }
 

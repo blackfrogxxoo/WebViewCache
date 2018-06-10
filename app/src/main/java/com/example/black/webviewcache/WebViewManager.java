@@ -2,6 +2,7 @@ package com.example.black.webviewcache;
 
 import android.content.Context;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 
 import java.util.HashMap;
@@ -20,6 +21,7 @@ public enum WebViewManager {
         WebViewWrapper webView = webViewWrapperMap.get(url);
         return webView != null;
     }
+
     void addWebView(Context context, String url) {
         if(webViewWrapperMap.containsKey(url)) {
             return;
@@ -27,10 +29,12 @@ public enum WebViewManager {
         WebViewWrapper webViewWrapper = new WebViewWrapper(context, urlLoadCallback, url);
         webViewWrapperMap.put(url, webViewWrapper);
     }
+
     void removeWebView(String url) {
         stopLoading(url);
         webViewWrapperMap.remove(url);
     }
+
     void startLoad(String url) {
         WebViewWrapper webViewWrapper = webViewWrapperMap.get(url);
         if(webViewWrapper == null) {
@@ -42,6 +46,7 @@ public enum WebViewManager {
             webViewWrapper.loadUrl();
         }
     }
+
     void stopLoading(String url) {
         WebViewWrapper webViewWrapper = webViewWrapperMap.get(url);
         if(webViewWrapper == null) {
@@ -57,6 +62,10 @@ public enum WebViewManager {
         while (iterator.hasNext()) {
             Map.Entry<String, WebViewWrapper> item = iterator.next();
             stopLoading(item.getKey());
+            WebView webView = item.getValue().getWebView();
+            webView.clearHistory();
+            webView.destroy();
+            webView = null;
         }
         webViewWrapperMap.clear();
     }

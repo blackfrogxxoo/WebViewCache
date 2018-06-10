@@ -26,7 +26,7 @@ public class CachedWebViewClient extends WebViewClient {
             ThreadPool.execute(new Runnable() {
                 @Override
                 public void run() {
-                    ImageCache.loadImage(url);
+                    ImageCache.loadImageToCache(url);
                 }
             });
         }
