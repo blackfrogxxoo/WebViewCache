@@ -76,6 +76,7 @@ public enum WebViewManager {
                 break;
             }
         }
+        release();
     }
 
     interface UrlLoadCallback {

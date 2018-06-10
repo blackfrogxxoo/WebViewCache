@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.clear_cache:
                 WebViewManager.INSTANCE.clearCache();
+                adapter.notifyDataSetChanged();
                 break;
             default:
                 break;
