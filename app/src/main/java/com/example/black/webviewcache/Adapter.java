@@ -19,15 +19,9 @@ import java.util.List;
 
 class Adapter extends RecyclerView.Adapter<Adapter.Holder> {
     private final Context context;
-    private WebView webViewForClearAllCache;
-    private UrlLoadCallback urlLoadCallback;
 
     Adapter(Context context) {
         this.context = context;
-    }
-
-    public void setUrlLoadCallback(UrlLoadCallback callback) {
-        this.urlLoadCallback = callback;
     }
 
     @NonNull
@@ -48,34 +42,7 @@ class Adapter extends RecyclerView.Adapter<Adapter.Holder> {
         } else {
             holder.progressBar.setProgress(0);
             holder.tvTitle.setText(null);
-        }
-        WebView webView = holder.webView;
-        if(webViewForClearAllCache == null) {
-            webViewForClearAllCache = webView;
-        }
-        webView.setWebViewClient(new WebViewClient());
-        webView.setWebChromeClient(new WebChromeClient() {
-            @Override
-            public void onReceivedTitle(WebView view, String title) {
-                holder.tvTitle.setText(title);
-            }
-
-            @Override
-            public void onProgressChanged(WebView view, int newProgress) {
-                if(urlLoadCallback != null) {
-                    urlLoadCallback.onProgress(url, newProgress);
-                }
-            }
-        });
-        webView.getSettings().setBuiltInZoomControls(false);
-        webView.getSettings().setDomStorageEnabled(true);
-        webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        webView.getSettings().setDatabaseEnabled(true);
-        webView.getSettings().setAppCacheEnabled(true);
-        if(!WebViewManager.INSTANCE.hasWebView(url)) {
-            WebViewManager.INSTANCE.addWebView(url, new WebViewWrapper(webView));
-        } else {
-            // TODO
+            WebViewManager.INSTANCE.addWebView(context, url);
         }
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,16 +59,7 @@ class Adapter extends RecyclerView.Adapter<Adapter.Holder> {
         return UrlRepo.getUrls().size();
     }
 
-    public void clearCache() {
-        webViewForClearAllCache.clearCache(true);
-    }
-
-    interface UrlLoadCallback {
-        void onProgress(String url, int progress);
-    }
-
     static class Holder extends RecyclerView.ViewHolder {
-        WebView webView;
         ProgressBar progressBar;
         TextView tvUrl;
         TextView tvLoading;
@@ -109,7 +67,6 @@ class Adapter extends RecyclerView.Adapter<Adapter.Holder> {
         Holder(View itemView) {
             super(itemView);
             itemView.setTag(this);
-            webView = itemView.findViewById(R.id.web_view);
             progressBar = itemView.findViewById(R.id.progress_bar);
             tvUrl = itemView.findViewById(R.id.tv_url);
             tvLoading = itemView.findViewById(R.id.tv_loading);

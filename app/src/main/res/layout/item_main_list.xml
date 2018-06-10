@@ -5,12 +5,6 @@
     android:layout_margin="8dp"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <WebView
-        android:id="@+id/web_view"
-        android:layout_width="1dp"
-        android:layout_height="1dp"
-        android:visibility="gone"/>
-
     <ProgressBar
         android:id="@+id/progress_bar"
         style="?android:attr/progressBarStyleHorizontal"

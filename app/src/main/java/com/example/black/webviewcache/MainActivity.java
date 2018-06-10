@@ -4,6 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -12,7 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
-
+    private static final String TAG = "MainActivity";
     private int lastFirstCompletelyVisibleItemPosition;
     private int lastLastCompletelyVisibleItemPosition;
     private Adapter adapter;
@@ -25,18 +26,18 @@ public class MainActivity extends AppCompatActivity {
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         adapter = new Adapter(this);
-        adapter.setUrlLoadCallback(new Adapter.UrlLoadCallback() {
+        WebViewManager.INSTANCE.setUrlLoadCallback(new WebViewManager.UrlLoadCallback() {
             @Override
             public void onProgress(String url, int progress) {
                 int count = recyclerView.getChildCount();
                 for(int i = 0; i < count; i++) {
                     View v = recyclerView.getChildAt(i);
                     Adapter.Holder holder = (Adapter.Holder) v.getTag();
-                    if(holder != null && url.equals(holder.webView.getUrl())) {
+                    if(holder != null && url.equals(UrlRepo.getUrls().get(holder.getAdapterPosition()))) {
+                        Log.i(TAG, "onProgress: " + i);
                         holder.progressBar.setProgress(progress);
                     }
                 }
-                WebViewManager.INSTANCE.setProgress(url, progress);
             }
         });
         recyclerView.setAdapter(adapter);
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.clear_cache:
-                adapter.clearCache();
+                WebViewManager.INSTANCE.clearCache();
                 break;
             default:
                 break;
